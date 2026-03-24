@@ -10,10 +10,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class ExpenseActivity extends AppCompatActivity {
     DatabaseHelper db;
-    EditText etAmount, etCategory;
-    TextView tvTotalExpense;
-    Button btnAddExpense;
     int tripId;
+    EditText etAmount, etCategory;
+    TextView tvTotal;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,40 +24,33 @@ public class ExpenseActivity extends AppCompatActivity {
 
         etAmount = findViewById(R.id.etExpenseAmount);
         etCategory = findViewById(R.id.etExpenseCategory);
-        tvTotalExpense = findViewById(R.id.tvTotalExpense);
-        btnAddExpense = findViewById(R.id.btnAddExpense);
+        tvTotal = findViewById(R.id.tvTotalExpense);
+        Button btnAdd = findViewById(R.id.btnAddExpense);
 
         updateTotal();
 
-        btnAddExpense.setOnClickListener(v -> {
-            String amountStr = etAmount.getText().toString();
-            String category = etCategory.getText().toString();
-
-            if (!amountStr.isEmpty() && !category.isEmpty()) {
-                double amount = Double.parseDouble(amountStr);
-                // MODIFICATION: Insert with actual tripId
+        btnAdd.setOnClickListener(v -> {
+            String amt = etAmount.getText().toString();
+            String cat = etCategory.getText().toString();
+            if(!amt.isEmpty()) {
                 db.getWritableDatabase().execSQL(
                         "INSERT INTO expenses (trip_id, amount, category) VALUES (?, ?, ?)",
-                        new Object[]{tripId, amount, category}
+                        new Object[]{tripId, Double.parseDouble(amt), cat}
                 );
-
+                updateTotal();
                 etAmount.setText("");
                 etCategory.setText("");
-                updateTotal();
-                Toast.makeText(this, "Expense Saved!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Expense Added", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void updateTotal() {
-        // MODIFICATION: Filter SUM by trip_id
         Cursor cursor = db.getReadableDatabase().rawQuery(
                 "SELECT SUM(amount) FROM expenses WHERE trip_id = ?",
                 new String[]{String.valueOf(tripId)});
-
         if (cursor.moveToFirst()) {
-            double total = cursor.getDouble(0);
-            tvTotalExpense.setText("Trip Total: ₹" + total);
+            tvTotal.setText("Trip Total: ₹" + cursor.getDouble(0));
         }
         cursor.close();
     }

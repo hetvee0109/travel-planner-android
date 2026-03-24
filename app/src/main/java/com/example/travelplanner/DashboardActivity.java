@@ -18,9 +18,6 @@ public class DashboardActivity extends AppCompatActivity {
         tripId = getIntent().getIntExtra("TRIP_ID", -1);
         dest = getIntent().getStringExtra("DESTINATION");
 
-        // Optional: Update a title textview if you have one
-        // TextView title = findViewById(R.id.tvDashTitle);
-        // title.setText("Trip: " + dest);
 
         findViewById(R.id.btnExpense).setOnClickListener(v -> {
             Intent i = new Intent(this, ExpenseActivity.class);
@@ -46,6 +43,10 @@ public class DashboardActivity extends AppCompatActivity {
             startActivity(i);
         });
 
-        findViewById(R.id.btnTrips).setOnClickListener(v -> finish()); // Go back to trip list
+        findViewById(R.id.btnTrips).setOnClickListener(v -> {
+            // Using DashboardActivity.this is safer than just 'this'
+            Intent intent = new Intent(DashboardActivity.this, TripsActivity.class);
+            startActivity(intent);
+        });
     }
 }

@@ -39,15 +39,21 @@ public class TripsActivity extends AppCompatActivity {
     private void refreshTripList() {
         tripList.clear();
         Cursor cursor = db.getAllTrips();
-        if (cursor != null && cursor.moveToFirst()) {
-            do {
+        if (cursor != null) {
+            // Use column names instead of hardcoded numbers (0, 1, 2) to prevent crashes
+            int idIndex = cursor.getColumnIndex("id");
+            int destIndex = cursor.getColumnIndex("destination");
+            int startIndex = cursor.getColumnIndex("start_date");
+            int endIndex = cursor.getColumnIndex("end_date");
+
+            while (cursor.moveToNext()) {
                 Trip trip = new Trip();
-                trip.id = cursor.getInt(0);
-                trip.destination = cursor.getString(1);
-                trip.startDate = cursor.getString(2);
-                trip.endDate = cursor.getString(3);
+                trip.id = cursor.getInt(idIndex);
+                trip.destination = cursor.getString(destIndex);
+                trip.startDate = cursor.getString(startIndex);
+                trip.endDate = cursor.getString(endIndex);
                 tripList.add(trip);
-            } while (cursor.moveToNext());
+            }
             cursor.close();
         }
         adapter.notifyDataSetChanged();
@@ -63,14 +69,16 @@ public class TripsActivity extends AppCompatActivity {
                 .setTitle("Plan New Journey")
                 .setView(view)
                 .setPositiveButton("Add", (dialog, which) -> {
-                    String dest = etDest.getText().toString();
-                    String start = etStart.getText().toString();
-                    String end = etEnd.getText().toString();
+                    String dest = etDest.getText().toString().trim();
+                    String start = etStart.getText().toString().trim();
+                    String end = etEnd.getText().toString().trim();
 
-                    if (!dest.isEmpty()) {
+                    if (!dest.isEmpty() && !start.isEmpty() && !end.isEmpty()) {
                         db.addTrip(dest, start, end);
                         refreshTripList();
                         Toast.makeText(this, "Trip to " + dest + " saved!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .setNegativeButton("Cancel", null)
